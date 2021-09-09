@@ -9,7 +9,7 @@ canvas {
 }
 
 body {
-	/*background-image: url(nogwaT.jpg);*/  /*achtergrond*/
+	/*background-image: url(achtergrond.jpg);*/  /*achtergrond is een optie*/
 	background-size: cover;
 	background-attachment: fixed;
 }
