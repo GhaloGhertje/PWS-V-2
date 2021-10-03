@@ -4,10 +4,46 @@
     <title>PWS V-2</title>
     <link rel = "stylesheet" type = "text/css" href = "Style.css">
   </head> 
+
   <script>
-	
-</script>
+      // Variabelen
+      var simulatie;
+      var ctx;
+
+      // Functies
+      window.onload = function () {
+        simulation = document.getElementById("simulation"); // Simulatie wordt gelijk gezet aan het canvas
+        ctx = simulatie.getContext('2d'); // CTX wordt gelijk gezt aan de context van het canvas
+        
+        // Hier worden de objecten van de simulatie gecreëerd
+
+        loop(); // Start de loop die voor altijd door blijft lopen
+		  }
+      
+    	function loop () { // Deze functie wordt elke beeldje per seconde opnieuw opgevraagd
+        render();
+        clearSimulation();
+        update();
+        requestAnimationFrame(loop); // Het opnieuw opvragen van de loop functie
+      }
+
+      function clearSimulation () {
+			  ctx.clearRect(0, 0, spel.width, spel.height);
+      }
+
+      function render () { // Het laadt alle voorwerpen in per beeldje
+          
+      }
+
+      function update () { // Update alle waardes van de objecten per beeldje
+          
+      }
+
+      //SOURCES CODE
+      //
+  </script>
+
   <body>
-      <canvas id="simulatie"  width="1920" height="1080" > </canvas>
+      <canvas id="simulation"  width="1920" height="1080" > </canvas>
   </body>
 </html>
