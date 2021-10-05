@@ -6,19 +6,54 @@
   </head> 
 
   <script>
-      // Variabelen
-      var simulatie;
-      var ctx;
+      // VARIABELEN
+      var simulation;
+      var context;
+    	
 
-      // Functies
+      // KLASSEN om objecten te kunnen maken, grafisch in te laden en up te daten
+      class V2raket {
+        constructor(mass, width, height, x, y, vx, vy, rotation, image) {
+          this.mass = mass;
+          this.width = width; 
+          this.height = height;
+          
+          this.x = x;
+          this.y = y;
+          this.vx = vx;
+          this.vy = vy;
+          this.rotation = rotation;
+          
+          this.image = new Image();
+          this.image.src = image;
+        }
+
+        render() {
+          context.drawImage(this.image, this.x, this.y, this.width, this.height)
+        }
+
+        update() {
+          this.x += this.vx;
+          this.y += this.vy;
+        }
+		  }
+
+
+      // FUNCTIES
       window.onload = function () {
         simulation = document.getElementById("simulation"); // Simulatie wordt gelijk gezet aan het canvas
-        ctx = simulatie.getContext('2d'); // CTX wordt gelijk gezt aan de context van het canvas
+        context = simulation.getContext('2d'); // Context wordt gelijk gezt aan de context van het canvas
         
-        // Hier worden de objecten van de simulatie gecreëerd
 
-        loop(); // Start de loop die voor altijd door blijft lopen
+        // Hier worden de objecten van de simulatie gecreëerd
+        // V2 = new V2raket(mass, width, height, x, y, vx, vy, rotation, "pad naar afbeelding V2");
+        V2 = new V2raket(1, 200, 200, 100, 100, 0, 0, 0, "images/V2.png")
+
+
+        // Hier wordt de loop gestart die voor altijd door blijft lopen
+        loop();
 		  }
+
       
     	function loop () { // Deze functie wordt elke beeldje per seconde opnieuw opgevraagd
         render();
@@ -27,20 +62,26 @@
         requestAnimationFrame(loop); // Het opnieuw opvragen van de loop functie
       }
 
+
       function clearSimulation () {
-			  ctx.clearRect(0, 0, spel.width, spel.height);
+			  context.clearRect(0, 0, simulation.width, simulation.height);
       }
 
-      function render () { // Het laadt alle voorwerpen in per beeldje
-          
+
+      function render () { // Het laadt alle voorwerpen grafisch in per beeldje
+          V2.render();
       }
+
 
       function update () { // Update alle waardes van de objecten per beeldje
-          
+          V2.update();
       }
 
-      //SOURCES CODE
-      //
+
+      //BRONNEN CODE
+      //https://informatica.broklede.nl/
+      //https://docs.google.com/document/d/1sn1p-yZ2fln3wNdlzKqOZDphwZUidp3JnodVM3PCzU4/edit
+
   </script>
 
   <body>
