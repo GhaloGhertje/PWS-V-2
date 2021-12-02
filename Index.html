@@ -3,27 +3,27 @@
   <head>
     <title>PWS V-2</title>
     <link rel = "stylesheet" type = "text/css" href = "Style.css">
-  </head> 
+  </head>
 
   <script>
       // VARIABELEN
       var simulation;
       var context;
-    	
+
 
       // KLASSEN om objecten te kunnen maken, grafisch in te laden en up te daten
       class V2raket {
         constructor(mass, width, height, x, y, vx, vy, rotation, image) {
           this.mass = mass;
-          this.width = width; 
+          this.width = width;
           this.height = height;
-          
+
           this.x = x;
           this.y = y;
           this.vx = vx;
           this.vy = vy;
           this.rotation = rotation;
-          
+
           this.image = new Image();
           this.image.src = image;
         }
@@ -43,22 +43,22 @@
       window.onload = function () {
         simulation = document.getElementById("simulation"); // Simulatie wordt gelijk gezet aan het canvas
         context = simulation.getContext('2d'); // Context wordt gelijk gezt aan de context van het canvas
-        
+
 
         // Hier worden de objecten van de simulatie gecreëerd
         // V2 = new V2raket(mass, width, height, x (op de "grond" = hoogte canvas -hoogte raket -hoogte grond t.o.v. canvas), y, vx, vy, rotation, "pad naar afbeelding V2");
-        V2 = new V2raket(1, 166, 639, 0, 800 -639 -100, 0, 1, 0, "images/V2.png");
+        V2 = new V2raket(1, 166, 639, 0, 800 -639 -100, 0, 1, 0, "images/V-2cut.png");
 
         // Hier wordt de loop gestart die voor altijd door blijft lopen
         loop();
 		  }
 
-      
+
     	function loop () { // Deze functie wordt elke beeldje per seconde opnieuw opgevraagd
         clearSimulation();
         render();
         update();
-        requestAnimationFrame(loop); // Het opnieuw opvragen van de loop functie 
+        requestAnimationFrame(loop); // Het opnieuw opvragen van de loop functie
       }
 
 
