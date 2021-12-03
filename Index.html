@@ -13,7 +13,7 @@
 
       // KLASSEN om objecten te kunnen maken, grafisch in te laden en up te daten
       class V2raket {
-        constructor(mass, width, height, x, y, vx, vy, rotation, image) {
+        constructor(mass, width, height, x, y, vx, vy, ax, ay, angle, image) {
           this.mass = mass;
           this.width = width;
           this.height = height;
@@ -22,19 +22,29 @@
           this.y = y;
           this.vx = vx;
           this.vy = vy;
-          this.rotation = rotation;
+          this.ax = ax;
+          this.ay = ay;
+          this.angle = angle;
 
           this.image = new Image();
           this.image.src = image;
         }
 
+
+
         render() {
-          context.drawImage(this.image, this.x, this.y);
+          context.drawImage(this.image, this.x, this.y, this.width, this.height);
+          //context.rotate(this.rotation);
         }
 
         update() {
+          this.vx += this.ax;
+          this.vy += this.ay;
           this.x += this.vx;
-          this.y -= this.vy; //De pixels op een webpagina werken van boven naar onder i.p.v. onder naar boven, daarom de min
+          //this.y -= this.vy; //De pixels op een webpagina werken van boven naar onder i.p.v. onder naar boven, daarom de min
+          this.y = Math.sin(0.002 * this.x) * -850 + 920; //ik probeer ook maar wat, lul. Gebruik een halve periode van een sinusfunctie om de parabolische baan te laten zien.
+          //this.V2.rotate(Math.atan2(this.y, this.x));
+          //context.setTransform(1, 0, 0, 1, this.x, this.y);
         }
 		  }
 
@@ -47,7 +57,7 @@
 
         // Hier worden de objecten van de simulatie gecreëerd
         // V2 = new V2raket(mass, width, height, x (op de "grond" = hoogte canvas -hoogte raket -hoogte grond t.o.v. canvas), y, vx, vy, rotation, "pad naar afbeelding V2");
-        V2 = new V2raket(1, 166, 639, 0, 800 -639 -100, 0, 1, 0, "images/V-2cut.png");
+        V2 = new V2raket(13, 21, 81, 1527, 850, 0, 0, -0.05, 0.1, 0, "images/V-2cut.png");
 
         // Hier wordt de loop gestart die voor altijd door blijft lopen
         loop();
@@ -72,11 +82,11 @@
         V2.render();
 
         // Het inladen van de statische objecten
-        context.lineWidth = 5;
-        context.beginPath();
+        //context.lineWidth = 5;
+        //context.beginPath();
         // context.arc(poxX, posY (straal + hoogte canvas - hoogte zichtbaar in het canvas), straal (straal aarde*schaal), beginpunt cirkel, eindpunt cirkel);
-        context.arc(0, 6371*2 +simulation.height -100, 6371*2, -0.5 * Math.PI, -0.45 * Math.PI);
-        context.stroke();
+        //context.arc(0, 6371*2 +simulation.height -100, 6371*2, -0.5 * Math.PI, -0.45 * Math.PI);
+        //context.stroke();
       }
 
 
@@ -92,6 +102,6 @@
   </script>
 
   <body>
-      <canvas id="simulation"  width="1700" height="800" > </canvas>
+      <canvas id="simulation"  width="1700" height="950" > </canvas>
   </body>
 </html>
