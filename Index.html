@@ -30,20 +30,22 @@
           this.image.src = image;
         }
 
-
-
         render() {
           context.drawImage(this.image, this.x, this.y, this.width, this.height);
-          //context.rotate(this.rotation);
         }
 
         update() {
           this.vx += this.ax;
           this.vy += this.ay;
           this.x += this.vx;
+
+          //context.translate(this.x, this.y);
+          //context.rotate(this.angle);
+
           //this.y -= this.vy; //De pixels op een webpagina werken van boven naar onder i.p.v. onder naar boven, daarom de min
-          this.y = Math.sin(0.002 * this.x) * -850 + 920; //ik probeer ook maar wat, lul. Gebruik een halve periode van een sinusfunctie om de parabolische baan te laten zien.
+          //this.y = Math.sin(0.002 * this.x) * -850 + 920; //ik probeer ook maar wat, lul. Gebruik een halve periode van een sinusfunctie om de parabolische baan te laten zien.
           //this.V2.rotate(Math.atan2(this.y, this.x));
+
           //context.setTransform(1, 0, 0, 1, this.x, this.y);
         }
 		  }
@@ -54,10 +56,9 @@
         simulation = document.getElementById("simulation"); // Simulatie wordt gelijk gezet aan het canvas
         context = simulation.getContext('2d'); // Context wordt gelijk gezt aan de context van het canvas
 
-
         // Hier worden de objecten van de simulatie gecreëerd
         // V2 = new V2raket(mass, width, height, x (op de "grond" = hoogte canvas -hoogte raket -hoogte grond t.o.v. canvas), y, vx, vy, rotation, "pad naar afbeelding V2");
-        V2 = new V2raket(13, 21, 81, 1527, 850, 0, 0, -0.05, 0.1, 0, "images/V-2cut.png");
+        V2 = new V2raket(13, 21, 81, 1527, 850, 0, 0, -0.05, 0.1, 50, "images/V-2cut.png");
 
         // Hier wordt de loop gestart die voor altijd door blijft lopen
         loop();
