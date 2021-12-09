@@ -136,10 +136,8 @@ def main():
                     pressed1 = True
                 elif event.key == pygame.K_SPACE and pressed2 == False:
                     if paused == False:
-                        paused == True
-                        time_factor = 0
-                        time_scale = 0 # Pauzeert de simulatie
-                    elif paused:
+                        paused = True
+                    else paused == True:
                         paused = False
                     pressed2 = True
             elif event.type == pygame.KEYUP:
@@ -160,6 +158,8 @@ def main():
 
         if paused == False:
             time_scale = math.pow(10, time_factor)
+        elif paused == True:
+            time_scale = 0
 
         pygame.display.flip() # Laad elke frame in op het scherm.
         milliseconds += (clock.tick(fps))*time_scale # Maximale frames per seconde (het maximale aantal keer dat de loop doorlopen wordt).
