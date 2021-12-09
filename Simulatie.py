@@ -1,5 +1,5 @@
 '''
-LET OP! 
+LET OP!
     DE X EN Y POSITIE OP HET SCHERM WORDT VANAF LINKSBOVEN WORDEN GETELD (NET ZOALS BIJ JAVASCRIPT).
     DIT BETEKENT DAT DE POSITIE, VERSNELLING, SNELHEID ETC. VOOR DE Y WAARDE OMGEKEERD IS.
     OM DE RAKET OP ONS SCHERM NAAR BOVEN TE LATEN GAAN MOETEN DE X EN Y VERSNELLINGEN NEGATIEF ZIJN.
@@ -39,6 +39,9 @@ milliseconds = 0
 font = pygame.font.SysFont('Arial Black', 30)
 background = pygame.transform.scale(pygame.image.load(os.path.join("images", "V2 bg.png")), (1920, 1080))
 
+pressed0 = False
+pressed1 = False
+
 distance_scale = 10**4 # Dit is de variabele die bepaalt hoe hoog de raket komt op ons scherm
 gravitational_constant = 6.67384 *math.pow(10, -11)
 mass_earth = 5.972 *math.pow(10, 24) #kg
@@ -64,7 +67,7 @@ class V2raket:
         this.x_center = this.width/2
         this.y_center = this.height/2
         this.burn_time = 68
-        
+
     def render(this): # Hier komt alle code die ervoor zorgt dat er op het scherm getekend of geplakt wordt. Denk hierbij aan de afbeelding van de V-2 die elke keer op een andere positie geplakt moet worden.
         # Op het laatste moment de waardes omzetten naar de waardes voor in de simulatie."+ pixels" is om de raket op de juiste plek te laten beginnen. "+ x/y_center" is om het plaatje in het midden van de raket te plakken.
         this.x_scale = (this.x / distance_scale) + 1715 + this.x_center
@@ -74,9 +77,14 @@ class V2raket:
     def update(this): # Hier komt alle code die de berekeningen en variabelen toepassen om de V-2 op de milisecondes goed te laten lopen.
         # De massa van de raket heeft hier niks mee te maken. Deze valt weg bij het berekenen van de versnelling (ipv van de kracht bij de standaardformule).
         this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(this.y + radius_earth, 2))
-        
+
         #this.ax = nog_geen_idee
-        this.ay = (100) - this.gravitational_acceleration  # "100" moet vervangen worden door jullie formule van de versnelling.
+        if milliseconds < 68000:
+            this.mass -= (8800/68) * (1/fps)
+            this.ay = (264900/this.mass) - this.gravitational_acceleration  # "100" moet vervangen worden door jullie formule van de versnelling.
+
+        else:
+            this.ay = -this.gravitational_acceleration
 
         # (1/fps) zorgt ervoor dat het, het aantal keer dat de code opgeroepen wordt, opheft. De tijdschaal is dan 1:1 (fps/fps = 1). De time_scale kan aangepast worden op basis van hoe snel je de simulatie wilt laten gaan.
         this.vx += this.ax * (1/fps) * time_scale
@@ -89,14 +97,14 @@ class V2raket:
 
 # Maakt het V-2 aan met de beginwaardes
 # V2=V2raket(mass, width, height, vx, vy, ax, ay, angle, image)
-V2 = V2raket(13, 21, 81, 0, 0, -0.05, 0.1, 50, "V-2cut.png")
+V2 = V2raket(12800, 21, 81, 0, 0, -0.05, 0.1, 50, "V-2cut.png")
 V2.calculate()
 
 
 # Dit is loop, deze code is de stam van de code die een aantal keer per seconde uitgevoerd moet worden.
 while True:
     # Reset alle objecten en maakt het scherm "leeg" (anders blijven de geplakt plaatjes van de V-2 van (bijvoorbeeld) een seconde nog geleden staan).
-    screen.blit(background, (0,0))
+    screen.blit(background , (0,0))
 
     # Zorgt ervoor dat als het programma gesloten wordt, de simulatie stopt.
     for event in pygame.event.get():
@@ -133,7 +141,7 @@ while True:
         time_factor += 0.5
     if keys[pygame.K_LEFT] and -2 < time_factor <= 5:
         time_factor -= 0.5
-    
+
     time_scale = math.pow(10, time_factor)
 
     pygame.display.flip() # Laad elke frame in op het scherm.
