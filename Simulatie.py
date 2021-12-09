@@ -39,9 +39,6 @@ milliseconds = 0
 font = pygame.font.SysFont('Arial Black', 30)
 background = pygame.transform.scale(pygame.image.load(os.path.join("images", "V2 bg.png")), (1920, 1080))
 
-pressed0 = False
-pressed1 = False
-
 distance_scale = 10**4 # Dit is de variabele die bepaalt hoe hoog de raket komt op ons scherm
 gravitational_constant = 6.67384 *math.pow(10, -11)
 mass_earth = 5.972 *math.pow(10, 24) #kg
@@ -99,7 +96,7 @@ V2.calculate()
 # Dit is loop, deze code is de stam van de code die een aantal keer per seconde uitgevoerd moet worden.
 while True:
     # Reset alle objecten en maakt het scherm "leeg" (anders blijven de geplakt plaatjes van de V-2 van (bijvoorbeeld) een seconde nog geleden staan).
-    screen.blit(background , (0,0))
+    screen.blit(background, (0,0))
 
     # Zorgt ervoor dat als het programma gesloten wordt, de simulatie stopt.
     for event in pygame.event.get():
