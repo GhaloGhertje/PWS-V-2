@@ -18,6 +18,7 @@ LET OP!
 import sys, pygame, math, os
 from pygame.locals import *
 import ctypes
+from timeit import default_timer as timer
 
 # De variabelen die gebruikt worden in de rest van de code.
 width = 1920
@@ -84,8 +85,8 @@ def main():
 
             #this.ax = nog_geen_idee
             if milliseconds < 68000:
-                this.mass -= (8800/68) * (1/fps) * time_scale
-                this.ay = (264900/this.mass) - this.gravitational_acceleration
+                this.mass -= (8800/68) * (1/fps) * time_scale # 8800
+                this.ay = (270000/this.mass) - this.gravitational_acceleration # 264900
             else:
                 this.ay = - this.gravitational_acceleration
 
@@ -105,6 +106,8 @@ def main():
 
     # Dit is loop, deze code is de stam van de code die een aantal keer per seconde uitgevoerd moet worden.
     while True:
+        start = timer()
+        
         # Reset alle objecten en maakt het scherm "leeg" (anders blijven de geplakt plaatjes van de V-2 van (bijvoorbeeld) een seconde nog geleden staan).
         screen.blit(background, (0,0))
 
@@ -124,6 +127,7 @@ def main():
         screen.blit(font.render("Vy: " + str(int(V2.vy)), False, (255, 255, 255)), (1650, 250))
         screen.blit(font.render("AX: " + str(int(V2.ax)), False, (255, 255, 255)), (1650, 300))
         screen.blit(font.render("Ay: " + str(int(V2.ay)), False, (255, 255, 255)), (1650, 350))
+        screen.blit(font.render("Ay: " + str(int(V2.mass)), False, (255, 255, 255)), (1650, 400))
 
         # Met de volgende knoppen kan de tijd slomer en sneller gezet worden. Ook kan de tijd stil gezet worden, evenals de simulatie gereset
         # DEEL 1 ZORGT ERVOOR DAT WAARDES MAKKELIJK AAN TE PASSEN ZIJN, JE KAN DE KNOPPPEN NIET INGEDRUKT HOUDEN
@@ -165,7 +169,9 @@ def main():
         elif paused == True:
             time_scale = 0
 
+        end = timer()
+        screen.blit(font.render("dT: " + str(end-start), False, (255, 255, 255)), (1650, 450))
+
         pygame.display.flip() # Laad elke frame in op het scherm.
         milliseconds += (clock.tick(fps))*time_scale # Maximale frames per seconde (het maximale aantal keer dat de loop doorlopen wordt).
-
 main()
