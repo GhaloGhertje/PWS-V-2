@@ -40,7 +40,7 @@ def main():
     pressed0, pressed1, pressed2 = False, False, False
 
     font = pygame.font.SysFont('Arial Black', 30)
-    background = pygame.transform.scale(pygame.image.load(os.path.join("images", "V2 bg.png")), (1920, 1080))
+    background = pygame.transform.scale(pygame.image.load(os.path.join("images", "V2 bg.png")), (width, height))
 
     distance_scale = 363.6 # Dit is de variabele die bepaalt hoe hoog de raket komt op ons scherm
     gravitational_constant = 6.67384 *math.pow(10, -11)
@@ -137,7 +137,7 @@ def main():
                 elif event.key == pygame.K_SPACE and pressed2 == False:
                     if paused == False:
                         paused = True
-                    else paused == True:
+                    elif paused == True:
                         paused = False
                     pressed2 = True
             elif event.type == pygame.KEYUP:
