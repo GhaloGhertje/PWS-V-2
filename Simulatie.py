@@ -40,6 +40,7 @@ def main():
     time_factor = 0
     time_scale = math.pow(10, time_factor)
     milliseconds = 0
+    delta_time, start, end = 0, 0, 0
     paused = False
 
     pressed0, pressed1, pressed2 = False, False, False
@@ -55,7 +56,7 @@ def main():
 
     # De Klasse om objecten te kunnen maken, grafisch in te laden en up te daten
     class V2raket:
-        def __init__(this, mass, width, height, vx, vy, ax, ay, angle, image):
+        def __init__(this, mass, width, height, vx, vy, ax, ay, thrust, burn_time, angle, image):
             this.mass = mass
             this.width = width
             this.height = height
@@ -65,13 +66,16 @@ def main():
             this.vy = vy
             this.ax = ax
             this.ay = ay
+            this.thrust = thrust
+            this.burn_time = burn_time
             this.angle = angle
             this.image = pygame.transform.scale(pygame.image.load(os.path.join("images", image)), (this.width, this.height))
 
         def calculate(this): # Hier komt alle code wat maar voor 1 keer uitgevoerd moet worden (voor de vlucht, bedoeld voor berekeningen).
             this.x_center = this.width/2
             this.y_center = this.height/2
-            this.burn_time = 68
+            this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(radius_earth, 2))
+            this.thrust = this.thrust * this.gravitational_acceleration * 1000
 
         def render(this): # Hier komt alle code die ervoor zorgt dat er op het scherm getekend of geplakt wordt. Denk hierbij aan de afbeelding van de V-2 die elke keer op een andere positie geplakt moet worden.
             # Op het laatste moment de waardes omzetten naar de waardes voor in de simulatie."+ pixels" is om de raket op de juiste plek te laten beginnen. "+ x/y_center" is om het plaatje in het midden van de raket te plakken.
@@ -85,29 +89,36 @@ def main():
 
             #this.ax = nog_geen_idee
             if milliseconds < 68000:
-                this.mass -= (8800/68) * (1/fps) * time_scale # 8800
-                this.ay = (270000/this.mass) - this.gravitational_acceleration # 264900
+                this.mass -= (8800/68) * delta_time * time_scale # 8800
+                this.thrust += (5000/68) * delta_time * time_scale * this.gravitational_acceleration
+                this.ay = (this.thrust/this.mass) - this.gravitational_acceleration # 264900
             else:
                 this.ay = - this.gravitational_acceleration
 
-            # (1/fps) zorgt ervoor dat het, het aantal keer dat de code opgeroepen wordt, opheft. De tijdschaal is dan 1:1 (fps/fps = 1). De time_scale kan aangepast worden op basis van hoe snel je de simulatie wilt laten gaan.
-            this.vx += this.ax * (1/fps) * time_scale
-            this.vy += this.ay * (1/fps) * time_scale
-            this.x += this.vx * (1/fps) * time_scale
-            this.y += this.vy * (1/fps) * time_scale
+            # delta_time zorgt ervoor dat het, het aantal keer dat de code opgeroepen wordt, opheft. De tijdschaal is dan 1:1 (delta_time/times_per_second_loop = 1). De time_scale kan aangepast worden op basis van hoe snel je de simulatie wilt laten gaan.
+            this.vx += this.ax * delta_time * time_scale
+            this.vy += this.ay * delta_time * time_scale
+            this.x += this.vx * delta_time * time_scale
+            this.y += this.vy * delta_time * time_scale
 
-            this.angle = 0 #2*math.pi*math.atan2(-this.vy, this.vx)  # Zoiets is het om de rotatie te krijgen, maar ik weet niet precies hoe het moet.
+            this.angle = 0 #2*math.pi*math.atan2(this.vx, -this.vy)  # Zoiets is het om de rotatie te krijgen, maar ik weet niet precies hoe het moet.
 
 
     # Maakt het V-2 aan met de beginwaardes
-    # V2=V2raket(mass, width, height, vx, vy, ax, ay, angle, image)
-    V2 = V2raket(12800, 21, 81, 0, 0, -0.05, 0.1, 50, "V-2cut.png")
+    # V2=V2raket(mass, width, height, vx, vy, ax, ay, thrust, burntime, angle, image)
+    V2 = V2raket(12800, 21, 81, 0, 0, -0.05, 0.1, 25, 68, 0, "V-2cut.png")
     V2.calculate()
+
+    start = timer()
 
     # Dit is loop, deze code is de stam van de code die een aantal keer per seconde uitgevoerd moet worden.
     while True:
+        end = timer()
+
+        delta_time = end - start
+
         start = timer()
-        
+
         # Reset alle objecten en maakt het scherm "leeg" (anders blijven de geplakt plaatjes van de V-2 van (bijvoorbeeld) een seconde nog geleden staan).
         screen.blit(background, (0,0))
 
@@ -128,6 +139,9 @@ def main():
         screen.blit(font.render("AX: " + str(int(V2.ax)), False, (255, 255, 255)), (1650, 300))
         screen.blit(font.render("Ay: " + str(int(V2.ay)), False, (255, 255, 255)), (1650, 350))
         screen.blit(font.render("Ay: " + str(int(V2.mass)), False, (255, 255, 255)), (1650, 400))
+        screen.blit(font.render("Ay: " + str(int(V2.thrust)), False, (255, 255, 255)), (1650, 450))
+
+        screen.blit(font.render("dT: " + str(delta_time), False, (255, 255, 255)), (1650, 500))
 
         # Met de volgende knoppen kan de tijd slomer en sneller gezet worden. Ook kan de tijd stil gezet worden, evenals de simulatie gereset
         # DEEL 1 ZORGT ERVOOR DAT WAARDES MAKKELIJK AAN TE PASSEN ZIJN, JE KAN DE KNOPPPEN NIET INGEDRUKT HOUDEN
@@ -168,9 +182,6 @@ def main():
             time_scale = math.pow(10, time_factor)
         elif paused == True:
             time_scale = 0
-
-        end = timer()
-        screen.blit(font.render("dT: " + str(end-start), False, (255, 255, 255)), (1650, 450))
 
         pygame.display.flip() # Laad elke frame in op het scherm.
         milliseconds += (clock.tick(fps))*time_scale # Maximale frames per seconde (het maximale aantal keer dat de loop doorlopen wordt).
