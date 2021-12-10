@@ -17,7 +17,16 @@ LET OP!
 # Importeert alle libaries die deze simulatie mogelijk maken.
 import sys, pygame, math, os
 from pygame.locals import *
+import ctypes
 
+# De variabelen die gebruikt worden in de rest van de code.
+width = 1920
+height = 1080
+
+# Het scherm inladen
+ctypes.windll.user32.SetProcessDPIAware()
+pygame.display.set_mode((width, height))
+screen = pygame.display.set_mode((width, height), pygame.NOFRAME)
 
 # Standaard acties bij het opstarten.
 pygame.init()
@@ -25,11 +34,6 @@ pygame.font.init()
 pygame.display.set_caption('V-2 Simulatie')
 
 def main():
-    # De variabelen die gebruikt worden in de rest van de code.
-    width = 1920
-    height = 1080
-    screen = pygame.display.set_mode((width, height), pygame.NOFRAME)
-
     clock = pygame.time.Clock()
     fps = 60
     time_factor = 0
