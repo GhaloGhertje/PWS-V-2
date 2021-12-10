@@ -39,7 +39,7 @@ def main():
     fps = 60
     time_factor = 0
     time_scale = math.pow(10, time_factor)
-    milliseconds = 0
+    seconds_past = 0
     delta_time, start, end = 0, 0, 0
     paused = False
 
@@ -88,7 +88,7 @@ def main():
             this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(this.y + radius_earth, 2))
 
             #this.ax = nog_geen_idee
-            if milliseconds < 68000:
+            if seconds_past < 68:
                 this.mass -= (8800/68) * delta_time * time_scale # 8800
                 this.thrust += (5000/68) * delta_time * time_scale * this.gravitational_acceleration
                 this.ay = (this.thrust/this.mass) - this.gravitational_acceleration # 264900
@@ -113,11 +113,13 @@ def main():
 
     # Dit is loop, deze code is de stam van de code die een aantal keer per seconde uitgevoerd moet worden.
     while True:
+        # Timer om de tijd te meten hoe lang de computer doet om de loop uit te voeren.
         end = timer()
-
         delta_time = end - start
-
         start = timer()
+
+        # Het optellen van de secondes (die voorbij zijn) voor de timer
+        seconds_past += delta_time * time_scale
 
         # Reset alle objecten en maakt het scherm "leeg" (anders blijven de geplakt plaatjes van de V-2 van (bijvoorbeeld) een seconde nog geleden staan).
         screen.blit(background, (0,0))
@@ -128,7 +130,7 @@ def main():
 
         # Zet de waardes van de V-2 op het scherm.
         screen.blit(font.render("Tijdschaal: 1:10^" + str(time_factor), False, (255, 255, 255)), (0, 0))
-        screen.blit(font.render("Tijd verlopen: " + str(round(milliseconds/1000, 1)) + " s", False, (255, 255, 255)), (0, 50))
+        screen.blit(font.render("Tijd verlopen: " + str(round(seconds_past, 1)) + " s", False, (255, 255, 255)), (0, 50))
 
         screen.blit(font.render("X: " + str(int(V2.x_scale)), False, (255, 255, 255)), (1650, 0))
         screen.blit(font.render("Y: " + str(int(V2.y_scale)), False, (255, 255, 255)), (1650, 50))
@@ -140,7 +142,6 @@ def main():
         screen.blit(font.render("Ay: " + str(int(V2.ay)), False, (255, 255, 255)), (1650, 350))
         screen.blit(font.render("Ay: " + str(int(V2.mass)), False, (255, 255, 255)), (1650, 400))
         screen.blit(font.render("Ay: " + str(int(V2.thrust)), False, (255, 255, 255)), (1650, 450))
-
         screen.blit(font.render("dT: " + str(delta_time), False, (255, 255, 255)), (1650, 500))
 
         # Met de volgende knoppen kan de tijd slomer en sneller gezet worden. Ook kan de tijd stil gezet worden, evenals de simulatie gereset
@@ -184,5 +185,5 @@ def main():
             time_scale = 0
 
         pygame.display.flip() # Laad elke frame in op het scherm.
-        milliseconds += (clock.tick(fps))*time_scale # Maximale frames per seconde (het maximale aantal keer dat de loop doorlopen wordt).
+        clock.tick(fps) # Maximale frames per seconde (het maximale aantal keer dat de loop doorlopen wordt).
 main()
