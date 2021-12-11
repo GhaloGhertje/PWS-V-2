@@ -20,9 +20,10 @@ from pygame.locals import *
 import ctypes
 from timeit import default_timer as timer
 
-# De variabelen die gebruikt worden in de rest van de code.
+# 3 constanten die gebruikt worden in de rest van de code.
 width = 1920
 height = 1080
+fps = 60
 
 # Het scherm inladen
 ctypes.windll.user32.SetProcessDPIAware()
@@ -34,9 +35,12 @@ pygame.init()
 pygame.font.init()
 pygame.display.set_caption('V-2 Simulatie')
 
+font = pygame.font.SysFont('Arial Black', 30)
+background = pygame.image.load(os.path.join("images", "V2 bg.png")).convert()
+
 def main():
+    # De variabelen die gebruikt worden in de rest van de code.
     clock = pygame.time.Clock()
-    fps = 60
     time_factor = 0
     time_scale = math.pow(10, time_factor)
     seconds_past = 0
@@ -44,9 +48,6 @@ def main():
     paused = False
 
     pressed0, pressed1, pressed2 = False, False, False
-
-    font = pygame.font.SysFont('Arial Black', 30)
-    background = pygame.transform.scale(pygame.image.load(os.path.join("images", "V2 bg.png")), (width, height))
 
     distance_scale = 363.6 # Dit is de variabele die bepaalt hoe hoog de raket komt op ons scherm
     gravitational_constant = 6.67384 *math.pow(10, -11)
@@ -101,12 +102,12 @@ def main():
             this.x += this.vx * delta_time * time_scale
             this.y += this.vy * delta_time * time_scale
 
-            this.angle = 0 #2*math.pi*math.atan2(this.vx, -this.vy)  # Zoiets is het om de rotatie te krijgen, maar ik weet niet precies hoe het moet.
+            this.angle = math.degrees(math.atan2(this.vx, this.vy))  # Zoiets is het om de rotatie te krijgen, maar ik weet niet precies hoe het moet.
 
 
     # Maakt het V-2 aan met de beginwaardes
     # V2=V2raket(mass, width, height, vx, vy, ax, ay, thrust, burntime, angle, image)
-    V2 = V2raket(12800, 21, 81, 0, 0, -0.05, 0.1, 25, 68, 0, "V-2cut.png")
+    V2 = V2raket(12800, 21, 81, 0, 0, 0, 0, 25, 68, 0, "V-2cut.png")
     V2.calculate()
 
     start = timer()
@@ -136,12 +137,12 @@ def main():
         screen.blit(font.render("Y: " + str(int(V2.y_scale)), False, (255, 255, 255)), (1650, 50))
         screen.blit(font.render("Dist.: " + str(round(V2.x/1000, 1)) + " km", False, (255, 255, 255)), (1650, 100))
         screen.blit(font.render("Height: " + str(round(V2.y/1000, 1)) + " km", False, (255, 255, 255)), (1650, 150))
-        screen.blit(font.render("Vx: " + str(int(V2.vx)), False, (255, 255, 255)), (1650, 200))
-        screen.blit(font.render("Vy: " + str(int(V2.vy)), False, (255, 255, 255)), (1650, 250))
-        screen.blit(font.render("AX: " + str(int(V2.ax)), False, (255, 255, 255)), (1650, 300))
-        screen.blit(font.render("Ay: " + str(int(V2.ay)), False, (255, 255, 255)), (1650, 350))
-        screen.blit(font.render("Ay: " + str(int(V2.mass)), False, (255, 255, 255)), (1650, 400))
-        screen.blit(font.render("Ay: " + str(int(V2.thrust)), False, (255, 255, 255)), (1650, 450))
+        screen.blit(font.render("Vx: " + str(round(V2.vx, 1)), False, (255, 255, 255)), (1650, 200))
+        screen.blit(font.render("Vy: " + str(round(V2.vy, 1)), False, (255, 255, 255)), (1650, 250))
+        screen.blit(font.render("AX: " + str(round(V2.ax, 1)), False, (255, 255, 255)), (1650, 300))
+        screen.blit(font.render("Ay: " + str(round(V2.ay, 1)), False, (255, 255, 255)), (1650, 350))
+        screen.blit(font.render("Ay: " + str(round(V2.mass, 1)), False, (255, 255, 255)), (1650, 400))
+        screen.blit(font.render("Ay: " + str(round(V2.thrust, 1)), False, (255, 255, 255)), (1650, 450))
         screen.blit(font.render("dT: " + str(delta_time), False, (255, 255, 255)), (1650, 500))
 
         # Met de volgende knoppen kan de tijd slomer en sneller gezet worden. Ook kan de tijd stil gezet worden, evenals de simulatie gereset
