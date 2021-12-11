@@ -77,6 +77,13 @@ def main():
             this.y_center = this.height/2
             this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(radius_earth, 2))
             this.thrust = this.thrust * this.gravitational_acceleration * 1000
+            this.y_thrust = this.thrust * (1/2)
+            this.x_thrust = this.thrust * (1/2)
+            this.speed = math.sqrt((this.vx**2) + (this.vy**2))
+            #this.airres = (0.0000252 * (this.speed**2))
+            #luchtdichtheid rond 60-70 km in kg/m^3  - https://www.engineeringtoolbox.com/standard-atmosphere-d_604.html
+            #ongeveer de drag coefficient van de neus van de V-2 (ogive). deze neuzen hebben een Cd van tussen de 0.05 en 0.23. https://www.astro.rug.nl/~hoek/geometric-aerodynamics.pdf
+            #straal van de raket zonder vinnen is 0.823 m dus de opp is 2,14
 
         def render(this): # Hier komt alle code die ervoor zorgt dat er op het scherm getekend of geplakt wordt. Denk hierbij aan de afbeelding van de V-2 die elke keer op een andere positie geplakt moet worden.
             # Op het laatste moment de waardes omzetten naar de waardes voor in de simulatie."+ pixels" is om de raket op de juiste plek te laten beginnen. "+ x/y_center" is om het plaatje in het midden van de raket te plakken.
@@ -89,12 +96,22 @@ def main():
             this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(this.y + radius_earth, 2))
 
             #this.ax = nog_geen_idee
-            if seconds_past < 68:
+            if seconds_past < 38.5:
                 this.mass -= (8800/68) * delta_time * time_scale # 8800
                 this.thrust += (5000/68) * delta_time * time_scale * this.gravitational_acceleration
                 this.ay = (this.thrust/this.mass) - this.gravitational_acceleration # 264900
+
+            elif seconds_past > 38.5 and seconds_past < 68: #tussen deze tijden beweegt de V-2 onder een hoek van ongeveer 45 graden, waardoor de thrust in de richting vd x en y ongeveer even groot zijn.
+                 this.mass -= (8800/68) * delta_time * time_scale # 8800
+                 this.thrust += (5000/68) * delta_time * time_scale * this.gravitational_acceleration
+                 this.ay = (this.y_thrust/this.mass) - this.gravitational_acceleration
+                 this.ax = -(this.x_thrust/this.mass)
             else:
                 this.ay = - this.gravitational_acceleration
+                #this.ax = - (math.cos(math.atan2(this.vy, this.vx)) * this.airres) / this.mass
+
+
+
 
             # delta_time zorgt ervoor dat het, het aantal keer dat de code opgeroepen wordt, opheft. De tijdschaal is dan 1:1 (delta_time/times_per_second_loop = 1). De time_scale kan aangepast worden op basis van hoe snel je de simulatie wilt laten gaan.
             this.vx += this.ax * delta_time * time_scale
@@ -102,7 +119,7 @@ def main():
             this.x += this.vx * delta_time * time_scale
             this.y += this.vy * delta_time * time_scale
 
-            this.angle = math.degrees(math.atan2(this.vx, this.vy))  # Zoiets is het om de rotatie te krijgen, maar ik weet niet precies hoe het moet.
+            this.angle = math.degrees(math.atan2(-this.vx, this.vy))  # Zoiets is het om de rotatie te krijgen, maar ik weet niet precies hoe het moet.
 
 
     # Maakt het V-2 aan met de beginwaardes
