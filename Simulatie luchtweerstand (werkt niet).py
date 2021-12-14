@@ -96,7 +96,13 @@ def main():
         def update(this): # Hier komt alle code die de berekeningen en variabelen toepassen om de V-2 op de milisecondes goed te laten lopen.
             # De massa van de raket heeft hier niks mee te maken. Deze valt weg bij het berekenen van de versnelling (ipv van de kracht bij de standaardformule).
             this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(this.y + radius_earth, 2))
-
+            this.y_thrust = this.thrust * (1/2)
+            this.x_thrust = this.thrust * (1/2)
+            this.speed = math.sqrt((this.vx**2) + (this.vy**2))
+            this.airres = (0.0000252 * (this.speed**2))
+            this.airreslow = (0.1 * (this.speed**2))
+            this.airresverylow = (0.76 * (this.speed**2))
+            
             #this.ax = nog_geen_idee
             if seconds_past < 38.5:
                 this.mass -= (8800/68) * delta_time * time_scale # 8800

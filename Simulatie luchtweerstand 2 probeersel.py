@@ -48,8 +48,8 @@ def main():
     paused = False
 
     pressed0, pressed1, pressed2 = False, False, False
-
-    distance_scale = 363.6 # Dit is de variabele die bepaalt hoe hoog de raket komt op ons scherm
+    distance_scale_x = 200
+    distance_scale_y = 181.5 # Dit is de variabele die bepaalt hoe hoog de raket komt op ons scherm
     gravitational_constant = 6.67384 *math.pow(10, -11)
     mass_earth = 5.972 *math.pow(10, 24) #kg
     radius_earth = 6364864 #m  https://rechneronline.de/earth-radius/ met altitude 52.1 op aarde (rond lanceerplaats) op zeeniveau
@@ -80,40 +80,52 @@ def main():
 
         def render(this): # Hier komt alle code die ervoor zorgt dat er op het scherm getekend of geplakt wordt. Denk hierbij aan de afbeelding van de V-2 die elke keer op een andere positie geplakt moet worden.
             # Op het laatste moment de waardes omzetten naar de waardes voor in de simulatie."+ pixels" is om de raket op de juiste plek te laten beginnen. "+ x/y_center" is om het plaatje in het midden van de raket te plakken.
-            this.x_scale = (this.x / distance_scale) + 1715 + this.x_center
-            this.y_scale = -(this.y / distance_scale) + 1007 - this.y_center
+            this.x_scale = (this.x / distance_scale_x) + 1715 + this.x_center
+            this.y_scale = -(this.y / distance_scale_y) + 1007 - this.y_center
             screen.blit(pygame.transform.rotate(this.image, this.angle), (int(this.x_scale), int(this.y_scale)))
+
+            pygame.draw.line(screen, (255,255,255), (0 / distance_scale_x + 1715 + this.x_center, 0), (0 / distance_scale_x + 1715 + this.x_center, 1080))
+            pygame.draw.line(screen, (255,255,255), (-320000 / distance_scale_x + 1715 + this.x_center, 0), (-320000 / distance_scale_x + 1715 + this.x_center, 1080))
+            pygame.draw.line(screen, (255,255,255), (0, -90000 / distance_scale_y + 1007 - this.y_center), (1920, -90000 / distance_scale_y + 1007 - this.y_center))
+
 
         def update(this): # Hier komt alle code die de berekeningen en variabelen toepassen om de V-2 op de milisecondes goed te laten lopen.
             # De massa van de raket heeft hier niks mee te maken. Deze valt weg bij het berekenen van de versnelling (ipv van de kracht bij de standaardformule).
             this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(this.y + radius_earth, 2))
-            
+
             this.velocity = math.sqrt((this.vx**2) + (this.vy**2))
-            this.air_resistance = (0.001 * (this.velocity**2)) # 0.0000252, 0.1, 0.76
+            this.air_resistance = (((1.4477 * math.e**(-0.0001 * this.y) * 0.10 * 2.14) / 2) * (this.velocity**2)) # 0.0000252, 0.1, 0.76
+            #luchtdichtheid rond 60-70 km en rond de 0-40 km in kg/m^3  - https://www.engineeringtoolbox.com/standard-atmosphere-d_604.html
+            #ongeveer de drag coefficient van de neus van de V-2 (ogive). deze neuzen hebben een Cd van tussen de 0.05 en 0.23. https://www.astro.rug.nl/~hoek/geometric-aerodynamics.pdf
+            #straal van de raket zonder vinnen is 0.823 m dus de opp is 2,14
+
 
             # Alleen versnelling omhoog
             if seconds_past < 38.5:
                 this.mass -= (8800/68) * delta_time * time_scale # 8800
                 this.thrust += (5000/68) * delta_time * time_scale * this.gravitational_acceleration
-                this.resultant_force = this.thrust - (this.air_resistance * delta_time * time_scale)
-                
+                this.resultant_force = this.thrust - (this.air_resistance)
+
                 this.ay = (this.resultant_force/this.mass) - this.gravitational_acceleration # 264900
 
             # Tussen deze tijden beweegt de V-2 onder een hoek van ongeveer 45 graden, waardoor de thrust in de richting vd x en y ongeveer even groot zijn.
             elif seconds_past >= 38.5 and seconds_past < 68:
                 this.mass -= (8800/68) * delta_time * time_scale # 8800
                 this.thrust += ((5000/68) * delta_time * time_scale * this.gravitational_acceleration)
-                this.resultant_force = this.thrust - (this.air_resistance * delta_time * time_scale)
+                this.resultant_force = this.thrust - this.air_resistance
 
-                this.y_thrust = this.resultant_force * math.sqrt(1/2) # Wortel(1/2) is afgeleid uit pythagoras als de rechte zijden aan elkaar gelijk zijn
-                this.x_thrust = this.resultant_force * math.sqrt(1/2)
+
+                this.y_thrust = this.resultant_force * math.cos(math.radians(55))
+                this.x_thrust = this.resultant_force * math.sin(math.radians(55))
+                #this.y_thrust = this.resultant_force * math.sqrt(1/2) # Wortel(1/2) is afgeleid uit pythagoras als de rechte zijden aan elkaar gelijk zijn
+                #this.x_thrust = this.resultant_force * math.sqrt(1/2)
 
                 this.ay = (this.y_thrust/this.mass) - this.gravitational_acceleration
                 this.ax = -(this.x_thrust/this.mass)
-                
+
             else:
-                this.ay = - this.gravitational_acceleration
-                #this.ax = - (math.cos(math.atan2(this.vy, this.vx)) * this.airres) / this.mass
+                this.ay = - this.gravitational_acceleration - (math.cos(math.atan2(this.vy, this.vx)) * this.air_resistance) / this.mass
+                this.ax = - (math.sin(math.atan2(this.vy, this.vx)) * this.air_resistance) / this.mass
 
 
             # delta_time zorgt ervoor dat het, het aantal keer dat de code opgeroepen wordt, opheft. De tijdschaal is dan 1:1 (delta_time/times_per_second_loop = 1). De time_scale kan aangepast worden op basis van hoe snel je de simulatie wilt laten gaan.
