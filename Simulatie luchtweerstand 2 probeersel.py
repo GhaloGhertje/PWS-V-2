@@ -45,7 +45,7 @@ def main():
     time_scale = math.pow(10, time_factor)
     seconds_past = 0
     delta_time, start, end = 0, 0, 0
-    paused = False
+    paused = True
 
     pressed0, pressed1, pressed2 = False, False, False
     distance_scale_x = 200
@@ -98,8 +98,7 @@ def main():
             #luchtdichtheid rond 60-70 km en rond de 0-40 km in kg/m^3  - https://www.engineeringtoolbox.com/standard-atmosphere-d_604.html
             #ongeveer de drag coefficient van de neus van de V-2 (ogive). deze neuzen hebben een Cd van tussen de 0.05 en 0.23. https://www.astro.rug.nl/~hoek/geometric-aerodynamics.pdf
             #straal van de raket zonder vinnen is 0.823 m dus de opp is 2,14
-
-
+            
             # Alleen versnelling omhoog
             if seconds_past < 38.5:
                 this.mass -= (8800/68) * delta_time * time_scale # 8800
@@ -114,19 +113,23 @@ def main():
                 this.thrust += ((5000/68) * delta_time * time_scale * this.gravitational_acceleration)
                 this.resultant_force = this.thrust - this.air_resistance
 
-
-                this.y_thrust = this.resultant_force * math.cos(math.radians(55))
-                this.x_thrust = this.resultant_force * math.sin(math.radians(55))
+                this.x_resultant_force = this.resultant_force * math.sin(math.radians(55))
+                this.y_resultant_force = this.resultant_force * math.cos(math.radians(55))
                 #this.y_thrust = this.resultant_force * math.sqrt(1/2) # Wortel(1/2) is afgeleid uit pythagoras als de rechte zijden aan elkaar gelijk zijn
                 #this.x_thrust = this.resultant_force * math.sqrt(1/2)
 
-                this.ay = (this.y_thrust/this.mass) - this.gravitational_acceleration
-                this.ax = -(this.x_thrust/this.mass)
+                this.ax = -(this.x_resultant_force/this.mass)
+                this.ay = (this.y_resultant_force/this.mass) - this.gravitational_acceleration
 
-            else:
+            elif this.y > 0:
                 this.ay = - this.gravitational_acceleration - (math.cos(math.atan2(this.vy, this.vx)) * this.air_resistance) / this.mass
                 this.ax = - (math.sin(math.atan2(this.vy, this.vx)) * this.air_resistance) / this.mass
-
+            
+            else:
+                this.ay = 0
+                this.ax = 0
+                this.vx = 0
+                this.vy = 0
 
             # delta_time zorgt ervoor dat het, het aantal keer dat de code opgeroepen wordt, opheft. De tijdschaal is dan 1:1 (delta_time/times_per_second_loop = 1). De time_scale kan aangepast worden op basis van hoe snel je de simulatie wilt laten gaan.
             this.vx += this.ax * delta_time * time_scale
@@ -142,13 +145,19 @@ def main():
     V2 = V2raket(12800, 21, 81, 0, 0, 0, 0, 25, 68, 0, "V-2cut.png")
     V2.calculate()
 
+    time_scale = 0
+
     start = timer()
 
     # Dit is loop, deze code is de stam van de code die een aantal keer per seconde uitgevoerd moet worden.
     while True:
-        # Timer om de tijd te meten hoe lang de computer doet om de loop uit te voeren.
         end = timer()
         delta_time = end - start
+
+        # Update waardes van de V-2.
+        V2.update()
+        
+        # Timer om de tijd te meten hoe lang de computer doet om de loop uit te voeren.
         start = timer()
 
         # Het optellen van de secondes (die voorbij zijn) voor de timer
@@ -157,8 +166,7 @@ def main():
         # Reset alle objecten en maakt het scherm "leeg" (anders blijven de geplakt plaatjes van de V-2 van (bijvoorbeeld) een seconde nog geleden staan).
         screen.blit(background, (0,0))
 
-        # Tekent en update de V-2.
-        V2.update()
+        # Zet de V-2 op het scherm.
         V2.render()
 
         # Zet de waardes van de V-2 op het scherm.
@@ -173,8 +181,8 @@ def main():
         screen.blit(font.render("Vy: " + str(round(V2.vy, 1)), False, (255, 255, 255)), (1650, 250))
         screen.blit(font.render("AX: " + str(round(V2.ax, 1)), False, (255, 255, 255)), (1650, 300))
         screen.blit(font.render("Ay: " + str(round(V2.ay, 1)), False, (255, 255, 255)), (1650, 350))
-        screen.blit(font.render("Ay: " + str(round(V2.mass, 1)), False, (255, 255, 255)), (1650, 400))
-        screen.blit(font.render("Ay: " + str(round(V2.thrust, 1)), False, (255, 255, 255)), (1650, 450))
+        screen.blit(font.render("Mass: " + str(round(V2.mass, 1)), False, (255, 255, 255)), (1650, 400))
+        screen.blit(font.render("Thr: " + str(round(V2.thrust, 1)), False, (255, 255, 255)), (1650, 450))
         screen.blit(font.render("dT: " + str(delta_time), False, (255, 255, 255)), (1650, 500))
 
         # Met de volgende knoppen kan de tijd slomer en sneller gezet worden. Ook kan de tijd stil gezet worden, evenals de simulatie gereset
@@ -184,10 +192,10 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and pressed0 == False:
+                if event.key == pygame.K_LEFT and pressed0 == False and -2 < time_factor <= 3:
                     time_factor -= 0.5
                     pressed0 = True
-                elif event.key == pygame.K_RIGHT and pressed1 == False:
+                elif event.key == pygame.K_RIGHT and pressed1 == False and -2 <= time_factor < 3:
                     time_factor += 0.5
                     pressed1 = True
                 elif event.key == pygame.K_SPACE and pressed2 == False:
@@ -207,9 +215,9 @@ def main():
         keys = pygame.key.get_pressed()
         if keys[pygame.K_r]:
             main() # Reset de simulatie
-        if keys[pygame.K_UP] and -2 <= time_factor < 5:
+        if keys[pygame.K_UP] and -2 <= time_factor < 3:
             time_factor = 0
-        if keys[pygame.K_DOWN] and -2 <= time_factor < 5:
+        if keys[pygame.K_DOWN] and -2 <= time_factor < 3:
             time_factor = 0
 
         if paused == False:
@@ -219,4 +227,6 @@ def main():
 
         pygame.display.flip() # Laad elke frame in op het scherm.
         clock.tick(fps) # Maximale frames per seconde (het maximale aantal keer dat de loop doorlopen wordt).
+
+        
 main()
