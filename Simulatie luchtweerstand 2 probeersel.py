@@ -23,7 +23,7 @@ from timeit import default_timer as timer
 # 3 constanten die gebruikt worden in de rest van de code.
 width = 1920
 height = 1080
-fps = 60
+fps = 10
 
 # Het scherm inladen
 ctypes.windll.user32.SetProcessDPIAware()
@@ -153,10 +153,10 @@ def main():
     while True:
         end = timer()
         delta_time = end - start
-
+        
         # Update waardes van de V-2.
         V2.update()
-        
+
         # Timer om de tijd te meten hoe lang de computer doet om de loop uit te voeren.
         start = timer()
 
@@ -192,10 +192,10 @@ def main():
                 pygame.quit()
                 sys.exit()
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT and pressed0 == False and -2 < time_factor <= 3:
+                if event.key == pygame.K_LEFT and pressed0 == False and 0 < time_factor <= 2:
                     time_factor -= 0.5
                     pressed0 = True
-                elif event.key == pygame.K_RIGHT and pressed1 == False and -2 <= time_factor < 3:
+                elif event.key == pygame.K_RIGHT and pressed1 == False and 0 <= time_factor < 2:
                     time_factor += 0.5
                     pressed1 = True
                 elif event.key == pygame.K_SPACE and pressed2 == False:
@@ -215,9 +215,9 @@ def main():
         keys = pygame.key.get_pressed()
         if keys[pygame.K_r]:
             main() # Reset de simulatie
-        if keys[pygame.K_UP] and -2 <= time_factor < 3:
+        if keys[pygame.K_UP] and 0 <= time_factor < 2:
             time_factor = 0
-        if keys[pygame.K_DOWN] and -2 <= time_factor < 3:
+        if keys[pygame.K_DOWN] and 0 <= time_factor < 2:
             time_factor = 0
 
         if paused == False:
@@ -226,7 +226,6 @@ def main():
             time_scale = 0
 
         pygame.display.flip() # Laad elke frame in op het scherm.
-        clock.tick(fps) # Maximale frames per seconde (het maximale aantal keer dat de loop doorlopen wordt).
-
-        
+        ticks = fps * time_scale
+        clock.tick((ticks)) # Maximale frames per seconde (het maximale aantal keer dat de loop doorlopen wordt).
 main()
