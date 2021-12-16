@@ -37,6 +37,7 @@ pygame.display.set_caption('V-2 Simulatie')
 
 font = pygame.font.SysFont('Arial Black', 30)
 background = pygame.image.load(os.path.join("images", "V2 bg.png")).convert()
+explosion = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(os.path.join("images", "Explosion.png")), (100, 100)), -3.5)
 
 def main():
     # De variabelen die gebruikt worden in de rest van de code.
@@ -47,9 +48,13 @@ def main():
     delta_time, start, end = 0, 0, 0
     paused = True
 
+    render_rocket = True
+
     pressed0, pressed1, pressed2 = False, False, False
+
     distance_scale_x = 200
     distance_scale_y = 181.5 # Dit is de variabele die bepaalt hoe hoog de raket komt op ons scherm
+
     gravitational_constant = 6.67384 *math.pow(10, -11)
     mass_earth = 5.972 *math.pow(10, 24) #kg
     radius_earth = 6364864 #m  https://rechneronline.de/earth-radius/ met altitude 52.1 op aarde (rond lanceerplaats) op zeeniveau
@@ -57,7 +62,7 @@ def main():
 
     # De Klasse om objecten te kunnen maken, grafisch in te laden en up te daten
     class V2raket:
-        def __init__(this, mass, width, height, vx, vy, ax, ay, thrust, burn_time, angle, image):
+        def __init__(this, mass, width, height, vx, vy, ax, ay, thrust, burn_time, angle, image, render_rocket):
             this.mass = mass
             this.width = width
             this.height = height
@@ -71,6 +76,7 @@ def main():
             this.burn_time = burn_time
             this.angle = angle
             this.image = pygame.transform.scale(pygame.image.load(os.path.join("images", image)), (this.width, this.height))
+            this.render_rocket = render_rocket
 
         def calculate(this): # Hier komt alle code wat maar voor 1 keer uitgevoerd moet worden (voor de vlucht, bedoeld voor berekeningen).
             this.x_center = this.width/2
@@ -80,14 +86,17 @@ def main():
 
         def render(this): # Hier komt alle code die ervoor zorgt dat er op het scherm getekend of geplakt wordt. Denk hierbij aan de afbeelding van de V-2 die elke keer op een andere positie geplakt moet worden.
             # Op het laatste moment de waardes omzetten naar de waardes voor in de simulatie."+ pixels" is om de raket op de juiste plek te laten beginnen. "+ x/y_center" is om het plaatje in het midden van de raket te plakken.
-            this.x_scale = (this.x / distance_scale_x) + 1715 + this.x_center
-            this.y_scale = -(this.y / distance_scale_y) + 1007 - this.y_center
-            screen.blit(pygame.transform.rotate(this.image, this.angle), (int(this.x_scale), int(this.y_scale)))
+            if this.render_rocket:
+                this.x_scale = (this.x / distance_scale_x) + 1715 + this.x_center
+                this.y_scale = -(this.y / distance_scale_y) + 1007 - this.y_center
+                screen.blit(pygame.transform.rotate(this.image, this.angle), (int(this.x_scale), int(this.y_scale)))
 
-            pygame.draw.line(screen, (255,255,255), (0 / distance_scale_x + 1715 + this.x_center, 0), (0 / distance_scale_x + 1715 + this.x_center, 1080))
-            pygame.draw.line(screen, (255,255,255), (-320000 / distance_scale_x + 1715 + this.x_center, 0), (-320000 / distance_scale_x + 1715 + this.x_center, 1080))
-            pygame.draw.line(screen, (255,255,255), (0, -90000 / distance_scale_y + 1007 - this.y_center), (1920, -90000 / distance_scale_y + 1007 - this.y_center))
-
+                pygame.draw.line(screen, (255,255,255), (0 / distance_scale_x + 1715 + this.x_center, 0), (0 / distance_scale_x + 1715 + this.x_center, 1080))
+                pygame.draw.line(screen, (255,255,255), (-320000 / distance_scale_x + 1715 + this.x_center, 0), (-320000 / distance_scale_x + 1715 + this.x_center, 1080))
+                pygame.draw.line(screen, (255,255,255), (0, -90000 / distance_scale_y + 1007 - this.y_center), (1920, -90000 / distance_scale_y + 1007 - this.y_center))
+            
+            else:
+                screen.blit(explosion, (this.x_scale -35, 960))
 
         def update(this): # Hier komt alle code die de berekeningen en variabelen toepassen om de V-2 op de milisecondes goed te laten lopen.
             # De massa van de raket heeft hier niks mee te maken. Deze valt weg bij het berekenen van de versnelling (ipv van de kracht bij de standaardformule).
@@ -121,7 +130,7 @@ def main():
                 this.ax = -(this.x_resultant_force/this.mass)
                 this.ay = (this.y_resultant_force/this.mass) - this.gravitational_acceleration
 
-            elif this.y > 0:
+            elif this.y > -2500:
                 this.ay = - this.gravitational_acceleration - (math.cos(math.atan2(this.vy, this.vx)) * this.air_resistance) / this.mass
                 this.ax = - (math.sin(math.atan2(this.vy, this.vx)) * this.air_resistance) / this.mass
             
@@ -130,6 +139,7 @@ def main():
                 this.ax = 0
                 this.vx = 0
                 this.vy = 0
+                this.render_rocket = False
 
             # delta_time zorgt ervoor dat het, het aantal keer dat de code opgeroepen wordt, opheft. De tijdschaal is dan 1:1 (delta_time/times_per_second_loop = 1). De time_scale kan aangepast worden op basis van hoe snel je de simulatie wilt laten gaan.
             this.vx += this.ax * delta_time * time_scale
@@ -138,11 +148,12 @@ def main():
             this.y += this.vy * delta_time * time_scale
 
             this.angle = math.degrees(math.atan2(-this.vx, this.vy))  # Zoiets is het om de rotatie te krijgen, maar ik weet niet precies hoe het moet.
+            
 
 
     # Maakt het V-2 aan met de beginwaardes
     # V2=V2raket(mass, width, height, vx, vy, ax, ay, thrust, burntime, angle, image)
-    V2 = V2raket(12800, 21, 81, 0, 0, 0, 0, 25, 68, 0, "V-2cut.png")
+    V2 = V2raket(12800, 21, 81, 0, 0, 0, 0, 25, 68, 0, "V-2cut.png", render_rocket)
     V2.calculate()
 
     time_scale = 0
