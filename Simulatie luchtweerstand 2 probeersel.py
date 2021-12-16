@@ -53,7 +53,7 @@ def main():
     pressed0, pressed1, pressed2 = False, False, False
 
     distance_scale_x = 200
-    distance_scale_y = 181.5 # Dit is de variabele die bepaalt hoe hoog de raket komt op ons scherm
+    distance_scale_y = 167.5 # Dit is de variabele die bepaalt hoe hoog de raket komt op ons scherm
 
     gravitational_constant = 6.67384 *math.pow(10, -11)
     mass_earth = 5.972 *math.pow(10, 24) #kg
@@ -87,16 +87,23 @@ def main():
         def render(this): # Hier komt alle code die ervoor zorgt dat er op het scherm getekend of geplakt wordt. Denk hierbij aan de afbeelding van de V-2 die elke keer op een andere positie geplakt moet worden.
             # Op het laatste moment de waardes omzetten naar de waardes voor in de simulatie."+ pixels" is om de raket op de juiste plek te laten beginnen. "+ x/y_center" is om het plaatje in het midden van de raket te plakken.
             if this.render_rocket:
-                this.x_scale = (this.x / distance_scale_x) + 1715 + this.x_center
-                this.y_scale = -(this.y / distance_scale_y) + 1007 - this.y_center
-                screen.blit(pygame.transform.rotate(this.image, this.angle), (int(this.x_scale), int(this.y_scale)))
+                this.x_scale = (this.x / distance_scale_x) + 1736
+                this.y_scale = -(this.y / distance_scale_y) + 1007
 
-                pygame.draw.line(screen, (255,255,255), (0 / distance_scale_x + 1715 + this.x_center, 0), (0 / distance_scale_x + 1715 + this.x_center, 1080))
-                pygame.draw.line(screen, (255,255,255), (-320000 / distance_scale_x + 1715 + this.x_center, 0), (-320000 / distance_scale_x + 1715 + this.x_center, 1080))
-                pygame.draw.line(screen, (255,255,255), (0, -90000 / distance_scale_y + 1007 - this.y_center), (1920, -90000 / distance_scale_y + 1007 - this.y_center))
+                this.rotated_image = pygame.transform.rotate(this.image, this.angle)
+                this.rect = this.rotated_image.get_rect(center = (this.x_scale, this.y_scale))
+
+                screen.blit(this.rotated_image, this.rect)
+
+                #pygame.draw.circle(screen, (255,255,255), (this.x_scale - this.x_center, this.y_scale - this.y_center), 5)
+                pygame.draw.circle(screen, (0,255,255), (this.x_scale, this.y_scale), 5)
+
+                #pygame.draw.line(screen, (255,255,255), (0 / distance_scale_x + 1736, 0), (0 / distance_scale_x + 1736, 1080))
+                #pygame.draw.line(screen, (255,255,255), (-320000 / distance_scale_x + 1736, 0), (-320000 / distance_scale_x + 1736, 1080))
+                pygame.draw.line(screen, (255,255,255), (0, -90000 / distance_scale_y + 1007), (1920, -90000 / distance_scale_y + 1007))
             
             else:
-                screen.blit(explosion, (this.x_scale -35, 960))
+                screen.blit(explosion, (this.x_scale -60, 960))
 
         def update(this): # Hier komt alle code die de berekeningen en variabelen toepassen om de V-2 op de milisecondes goed te laten lopen.
             # De massa van de raket heeft hier niks mee te maken. Deze valt weg bij het berekenen van de versnelling (ipv van de kracht bij de standaardformule).
@@ -152,7 +159,7 @@ def main():
 
 
     # Maakt het V-2 aan met de beginwaardes
-    # V2=V2raket(mass, width, height, vx, vy, ax, ay, thrust, burntime, angle, image)
+    # V2=V2raket(mass, width, height, vx, vy, ax, ay, thrust, burntime, angle, image, render_rocket)
     V2 = V2raket(12800, 21, 81, 0, 0, 0, 0, 25, 68, 0, "V-2cut.png", render_rocket)
     V2.calculate()
 
