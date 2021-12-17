@@ -36,7 +36,7 @@ pygame.font.init()
 pygame.display.set_caption('V-2 Simulatie')
 
 font = pygame.font.SysFont('Arial Black', 30)
-background = pygame.image.load(os.path.join("images", "V2 bg.png")).convert()
+background = pygame.image.load(os.path.join("images", "V-2 bg.png")).convert()
 explosion = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(os.path.join("images", "Explosion.png")), (100, 100)), -3.5)
 
 def main():
@@ -77,7 +77,7 @@ def main():
             this.burn_time = burn_time
             this.angle = angle
             this.image = pygame.transform.scale(pygame.image.load(os.path.join("images", image)), (this.width, this.height))
-            this.thrust_image = pygame.transform.scale(pygame.image.load(os.path.join("images", thrust_image)), (this.width, this.height))
+            this.thrust_image = pygame.transform.scale(pygame.image.load(os.path.join("images", thrust_image)), (this.width, this.height + 70))
             this.render_rocket = render_rocket
             this.thrust_switch = thrust_switch
 
@@ -104,7 +104,7 @@ def main():
             elif this.render_rocket and this.thrust:
                 this.rotated_image = pygame.transform.rotate(this.image, this.angle)
                 this.rect = this.rotated_image.get_rect(center = (this.x_scale, this.y_scale))
-
+                
                 screen.blit(this.rotated_image, this.rect)
 
                 #pygame.draw.circle(screen, (255,255,255), (this.x_scale - this.x_center, this.y_scale - this.y_center), 5)
@@ -173,7 +173,7 @@ def main():
 
     # Maakt het V-2 aan met de beginwaardes
     # V2=V2raket(mass, width, height, vx, vy, ax, ay, thrust, burntime, angle, image, thrust_image, render_rocket, thrust_switch)
-    V2 = V2raket(12800, 21, 81, 0, 0, 0, 0, 25, 68, 0, "V-2cut.png", "V-2cut.png", render_rocket, thrust_switch)
+    V2 = V2raket(12800, 21, 81, 0, 0, 0, 0, 25, 68, 0, "V-2.png", "V-2thrust.png", render_rocket, thrust_switch)
     V2.calculate()
 
     time_scale = 0
