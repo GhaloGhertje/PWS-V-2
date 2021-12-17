@@ -87,21 +87,29 @@ def main():
             this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(radius_earth, 2))
             this.thrust = this.thrust * this.gravitational_acceleration * 1000
 
-        def render(this): # Hier komt alle code die ervoor zorgt dat er op het scherm getekend of geplakt wordt. Denk hierbij aan de afbeelding van de V-2 die elke keer op een andere positie geplakt moet worden.
-            # Op het laatste moment de waardes omzetten naar de waardes voor in de simulatie."+ pixels" is om de raket op de juiste plek te laten beginnen. "+ x/y_center" is om het plaatje in het midden van de raket te plakken.
-            this.x_scale = (this.x / distance_scale_x) + 1736
-            this.y_scale = -(this.y / distance_scale_y) + 1007
-            
+        def render(this): # Hier komt alle code die ervoor zorgt dat er op het scherm getekend of geplakt wordt. Denk hierbij aan de afbeelding van de V-2 die elke keer op een andere positie geplakt moet worden.        
             if this.thrust_switch:
+                # Zorgt ervoor dat het middelpunt van de draai van het lange plaatje afgestemd wordt op de graden. 35 is hierbij het verschil van het midden tussen het lange en het korte plaatje.
+                this.delta_x_center_component = math.sin(math.radians(this.angle)) * 35
+                this.delta_y_center_component = math.cos(math.radians(this.angle)) * 35
+                
+                # Op het laatste moment de waardes omzetten naar de waardes voor in de simulatie."+ pixels" is om de raket op de juiste plek te laten beginnen. "+ x/y_center" is om het plaatje in het midden van de raket te plakken.
+                this.x_scale = (this.x / distance_scale_x) + 1736 + this.delta_x_center_component
+                this.y_scale = -(this.y / distance_scale_y) + 1007 + this.delta_y_center_component
+
                 this.rotated_image = pygame.transform.rotate(this.thrust_image, this.angle)
                 this.rect = this.rotated_image.get_rect(center = (this.x_scale, this.y_scale))
 
                 screen.blit(this.rotated_image, this.rect)
 
                 #pygame.draw.circle(screen, (255,255,255), (this.x_scale - this.x_center, this.y_scale - this.y_center), 5)
-                pygame.draw.circle(screen, (0,255,255), (this.x_scale, this.y_scale), 5)
+                pygame.draw.circle(screen, (255,0,0), (this.x_scale, this.y_scale), 5)
             
             elif this.render_rocket and this.thrust:
+                # Op het laatste moment de waardes omzetten naar de waardes voor in de simulatie."+ pixels" is om de raket op de juiste plek te laten beginnen. "+ x/y_center" is om het plaatje in het midden van de raket te plakken.
+                this.x_scale = (this.x / distance_scale_x) + 1736
+                this.y_scale = -(this.y / distance_scale_y) + 1007
+
                 this.rotated_image = pygame.transform.rotate(this.image, this.angle)
                 this.rect = this.rotated_image.get_rect(center = (this.x_scale, this.y_scale))
                 
