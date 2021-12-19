@@ -37,6 +37,7 @@ pygame.display.set_caption('V-2 Simulatie')
 
 
 font = pygame.font.SysFont('Arial Black', 30)
+superscript = pygame.font.SysFont('Arial Black', 18)
 background = pygame.image.load(os.path.join("images", "V-2 bg.png")).convert()
 explosion = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(os.path.join("images", "Explosion.png")), (100, 100)), -3.5)
 
@@ -45,6 +46,9 @@ explosion = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(os.
 def main():
     # Maakt een nieuwe oppervlakte aan waarop de baan van de V-2 permanent op geprojecteerd kan worden.
     screen_layer = pygame.Surface((width, height), pygame.SRCALPHA)
+
+    # Print de 90 km op de nieuwe oppervlakte.
+    screen_layer.blit(font.render("90 km", False, (255, 255, 255)), (1810, 420))
 
     # De variabelen die met tijd hebben te maken in de code.
     clock = pygame.time.Clock()
@@ -90,12 +94,13 @@ def main():
             this.render_rocket = render_rocket
             this.thrust_switch = thrust_switch
 
-
         def calculate(this): # Hier komt alle code wat maar voor 1 keer uitgevoerd moet worden (voor de vlucht, bedoeld voor berekeningen).
             this.x_center = this.width/2
             this.y_center = this.height/2
             this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(radius_earth, 2))
             this.thrust = this.thrust * this.gravitational_acceleration * 1000
+            this.acceleration = -this.gravitational_acceleration
+            this.velocity = 0
 
 
         def render(this): # Hier komt alle code die ervoor zorgt dat er op het scherm getekend of geplakt wordt. Denk hierbij aan de afbeelding van de V-2 die elke keer op een andere positie geplakt moet worden.        
@@ -128,22 +133,23 @@ def main():
                 screen.blit(this.rotated_image, this.rect)
 
                 pygame.draw.circle(screen_layer, (0,0,255), (this.x_scale, this.y_scale), 4)
-                #pygame.draw.circle(screen, (0,255,255), (this.x_scale, this.y_scale), 5)
             
             else:
                 screen.blit(explosion, (this.x_scale -75, 960))
 
 
-            #pygame.draw.line(screen, (255,255,255), (0 / distance_scale_x + 1736, 0), (0 / distance_scale_x + 1736, 1080))
-            #pygame.draw.line(screen, (255,255,255), (-320000 / distance_scale_x + 1736, 0), (-320000 / distance_scale_x + 1736, 1080))
-            pygame.draw.line(screen, (255,255,255), (0, -90000 / distance_scale_y + 1007), (1920, -90000 / distance_scale_y + 1007))
+            pygame.draw.line(screen_layer, (255,255,255), (0, -90000 / distance_scale_y + 1007), (1920, -90000 / distance_scale_y + 1007))
 
 
         def update(this): # Hier komt alle code die de berekeningen en variabelen toepassen om de V-2 op de milisecondes goed te laten lopen.
             # De massa van de raket heeft hier niks mee te maken. Deze valt weg bij het berekenen van de versnelling (ipv van de kracht bij de standaardformule).
-            this.gravitational_accelSeration = (gravitational_constant * mass_earth) / (math.pow(this.y + radius_earth, 2))
-
+            this.gravitational_acceleration = (gravitational_constant * mass_earth) / (math.pow(this.y + radius_earth, 2))
+            
+            this.old_velocity = this.velocity
             this.velocity = math.sqrt((this.vx**2) + (this.vy**2))
+            this.delta_velocity = this.velocity - this.old_velocity
+            this.acceleration = this.delta_velocity * time_scale
+
             this.air_resistance = (((1.4477 * math.e**(-0.0001 * this.y) * 0.10 * 2.14) / 2) * (this.velocity**2)) # 0.0000252, 0.1, 0.76
             # De luchtdichtheid rond 60-70 km en rond de 0-40 km in kg/m^3  - https://www.engineeringtoolbox.com/standard-atmosphere-d_604.html
             # Ongeveer de drag coefficient van de neus van de V-2 (ogive). deze neuzen hebben een Cd van tussen de 0.05 en 0.23. https://www.astro.rug.nl/~hoek/geometric-aerodynamics.pdf
@@ -185,6 +191,7 @@ def main():
                 this.vy = 0
                 this.render_rocket = False
 
+                return False
 
             # delta_time zorgt ervoor, dat het aantal keer dat de code opgeroepen wordt, wordt opgeheven. De tijdschaal is dan 1:1 (delta_time/times_per_second_loop = 1). De time_scale kan aangepast worden op basis van hoe snel je de simulatie wilt laten gaan.
             this.vx += this.ax * delta_time * time_scale
@@ -193,7 +200,7 @@ def main():
             this.y += this.vy * delta_time * time_scale
 
             this.angle = math.degrees(math.atan2(-this.vx, this.vy)) # Haalt de rotatie van de raket uit de snelheidsvector. Door middel van de inverse tangus.
-            
+            return True
 
 
     # Maakt het V-2 aan met de beginwaardes
@@ -205,13 +212,15 @@ def main():
     start = timer()
 
 
+
     # Dit is loop, deze code is de stam van de code die een aantal keer per seconde uitgevoerd moet worden.
     while True:
         end = timer()
         delta_time = end - start
         
-        # Update waardes van de V-2.
-        V2.update()
+        # Update waardes van de V-2 en stopt de simulatie als de V-2 zijn eindpunt heeft bereikt.
+        if V2.update() == False:
+            paused = True
 
         # Timer om de tijd te meten hoe lang de computer doet om de loop uit te voeren.
         start = timer()
@@ -234,23 +243,27 @@ def main():
         V2.render()
 
         # Zet de waardes van de V-2 op het scherm.
-        screen.blit(font.render("Tijdschaal: 1:10^" + str(time_factor), False, (255, 255, 255)), (1530, 50))
+        if time_factor == 0:
+            screen.blit(font.render("Tijdschaal: 1:1", False, (255, 255, 255)), (1530, 50))
+        elif time_factor == 0.5:
+            screen.blit(font.render("Tijdschaal: 1:10", False, (255, 255, 255)), (1530, 50))
+            screen.blit(superscript.render("0.5", False, (255, 255, 255)), (1790, 47))
+        elif time_factor == 1:
+            screen.blit(font.render("Tijdschaal: 1:10", False, (255, 255, 255)), (1530, 50))
+        elif time_factor == 1.5:
+            screen.blit(font.render("Tijdschaal: 1:10", False, (255, 255, 255)), (1530, 50))
+            screen.blit(superscript.render("1.5", False, (255, 255, 255)), (1790, 47))
+        else:
+            screen.blit(font.render("Tijdschaal: 1:100", False, (255, 255, 255)), (1530, 50))
+
         screen.blit(font.render("Verstreken tijd: " + str(round(seconds_past, 1)) + " s", False, (255, 255, 255)), (1530, 100))
 
         screen.blit(font.render("Afstand: " + str(abs(round(V2.x/1000, 1))) + " km", False, (255, 255, 255)), (10, 0))
         screen.blit(font.render("Hoogte: " + str(round(V2.y/1000, 1)) + " km", False, (255, 255, 255)), (10, 50))
-        screen.blit(font.render("Snelheid: " + str(round(V2.velocity/1000, 1)) + " km/s", False, (255, 255, 255)), (10, 100))
-        screen.blit(font.render("Versnelling: " + str(round(math.sqrt(V2.ax**2 + V2.ay**2)/9.8, 1)) + " g", False, (255, 255, 255)), (10, 150))
+        screen.blit(font.render("Snelheid: " + str(round(V2.velocity/1000, 1)) + " km/s`¹", False, (255, 255, 255)), (10, 100))
+        screen.blit(font.render("Versnelling: " + str(round(V2.acceleration, 1)) + " m/s²", False, (255, 255, 255)), (10, 150))
         screen.blit(font.render("Massa: " + str(round(V2.mass/1000, 1)) + " ton", False, (255, 255, 255)), (10, 200))
         screen.blit(font.render("Stuwkracht: " + str(round(V2.thrust/1000, 1)) + " kN", False, (255, 255, 255)), (10, 250))
-        #screen.blit(font.render("X: " + str(int(V2.x_scale)), False, (255, 255, 255)), (1650, 0))
-        #screen.blit(font.render("Y: " + str(int(V2.y_scale)), False, (255, 255, 255)), (1650, 50))
-        #screen.blit(font.render("Vx: " + str(round(V2.vx, 1)), False, (255, 255, 255)), (1650, 200))
-        #screen.blit(font.render("Vy: " + str(round(V2.vy, 1)), False, (255, 255, 255)), (1650, 250))
-        #screen.blit(font.render("AX: " + str(round(V2.ax, 1)), False, (255, 255, 255)), (1650, 300))
-        #screen.blit(font.render("Ay: " + str(round(V2.ay, 1)), False, (255, 255, 255)), (1650, 350))
-        #screen.blit(font.render("dT: " + str(delta_time), False, (255, 255, 255)), (1650, 500))
-
 
         # Met de volgende knoppen kan de tijd slomer en sneller gezet worden. Ook kan de tijd stil gezet worden, evenals de simulatie gereset.
         # DEEL 1 zorgt voor knoppen die niet ingedrukt gehouden kunnen worden.
