@@ -39,8 +39,8 @@ pygame.display.set_caption('V-2 Simulatie')
 font = pygame.font.SysFont('Arial Black', 30)
 superscript = pygame.font.SysFont('Arial Black', 18)
 background = pygame.image.load(os.path.join("images", "V-2 bg.png")).convert()
-explosion = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(os.path.join("images", "Explosion.png")), (100, 100)), -3.5)
-
+explosion = pygame.transform.rotate(pygame.transform.scale(pygame.image.load(os.path.join("images", "Explosion.png")), (100,100)), -3.5)
+launch_location_background = pygame.image.load(os.path.join("images", "Launch location bg.png"))
 
 # Alles wat veranderd in de simulatie staat in deze functie. Zodat deze functie opnieuw opgeroepen kan worden en alles gereset wordt.
 def main():
@@ -48,7 +48,7 @@ def main():
     screen_layer = pygame.Surface((width, height), pygame.SRCALPHA)
 
     # Print de 90 km op de nieuwe oppervlakte.
-    screen_layer.blit(font.render("90 km", False, (255, 255, 255)), (1810, 420))
+    screen_layer.blit(font.render("90 km", False, (255,255,255)), (1810,420))
 
     # De variabelen die met tijd hebben te maken in de code.
     clock = pygame.time.Clock()
@@ -235,35 +235,38 @@ def main():
         # Zet de transparante laag op het scherm voor de baan van de V-2, als de gebruiker dit aan heeft staan.
         if show_trajectory:
             screen.blit(screen_layer, (0,0))
-            screen.blit(font.render("Baan: aan", False, (255, 255, 255)), (1530, 0))
+            screen.blit(font.render("Baan: aan", False, (255,255,255)), (1530,0))
         else:
-            screen.blit(font.render("Baan: uit", False, (255, 255, 255)), (1530, 0))
+            screen.blit(font.render("Baan: uit", False, (255,255,255)), (1530,0))
 
         # Zet de V-2 op het scherm.
         V2.render()
+        
+        # Zet een plaatje over de V-2 heen op de opstijglocatie. Hierdoor gaat de witte straal uit de V-2 niet zichtbaar door de grond heen.
+        screen.blit(launch_location_background, (1727,1043))
 
         # Zet de waardes van de V-2 op het scherm.
         if time_factor == 0:
-            screen.blit(font.render("Tijdschaal: 1:1", False, (255, 255, 255)), (1530, 50))
+            screen.blit(font.render("Tijdschaal: 1:1", False, (255,255,255)), (1530,50))
         elif time_factor == 0.5:
-            screen.blit(font.render("Tijdschaal: 1:10", False, (255, 255, 255)), (1530, 50))
-            screen.blit(superscript.render("0.5", False, (255, 255, 255)), (1790, 47))
+            screen.blit(font.render("Tijdschaal: 1:10", False, (255,255,255)), (1530,50))
+            screen.blit(superscript.render("0.5", False, (255,255,255)), (1790,47))
         elif time_factor == 1:
-            screen.blit(font.render("Tijdschaal: 1:10", False, (255, 255, 255)), (1530, 50))
+            screen.blit(font.render("Tijdschaal: 1:10", False, (255,255,255)), (1530,50))
         elif time_factor == 1.5:
-            screen.blit(font.render("Tijdschaal: 1:10", False, (255, 255, 255)), (1530, 50))
-            screen.blit(superscript.render("1.5", False, (255, 255, 255)), (1790, 47))
+            screen.blit(font.render("Tijdschaal: 1:10", False, (255,255, 255)), (1530,50))
+            screen.blit(superscript.render("1.5", False, (255,255,255)), (1790,47))
         else:
-            screen.blit(font.render("Tijdschaal: 1:100", False, (255, 255, 255)), (1530, 50))
+            screen.blit(font.render("Tijdschaal: 1:100", False, (255,255,255)), (1530,50))
 
-        screen.blit(font.render("Verstreken tijd: " + str(round(seconds_past, 1)) + " s", False, (255, 255, 255)), (1530, 100))
+        screen.blit(font.render("Verstreken tijd: " + str(round(seconds_past, 1)) + " s", False, (255,255,255)), (1530,100))
 
-        screen.blit(font.render("Afstand: " + str(abs(round(V2.x/1000, 1))) + " km", False, (255, 255, 255)), (10, 0))
-        screen.blit(font.render("Hoogte: " + str(round(V2.y/1000, 1)) + " km", False, (255, 255, 255)), (10, 50))
-        screen.blit(font.render("Snelheid: " + str(round(V2.velocity/1000, 1)) + " km/s`¹", False, (255, 255, 255)), (10, 100))
-        screen.blit(font.render("Versnelling: " + str(round(V2.acceleration, 1)) + " m/s²", False, (255, 255, 255)), (10, 150))
-        screen.blit(font.render("Massa: " + str(round(V2.mass/1000, 1)) + " ton", False, (255, 255, 255)), (10, 200))
-        screen.blit(font.render("Stuwkracht: " + str(round(V2.thrust/1000, 1)) + " kN", False, (255, 255, 255)), (10, 250))
+        screen.blit(font.render("Afstand: " + str(abs(round(V2.x/1000, 1))) + " km", False, (255,255,255)), (10,0))
+        screen.blit(font.render("Hoogte: " + str(round(V2.y/1000, 1)) + " km", False, (255,255,255)), (10,50))
+        screen.blit(font.render("Snelheid: " + str(round(V2.velocity/1000, 1)) + " km/s", False, (255,255,255)), (10,100))
+        screen.blit(font.render("Versnelling: " + str(round(V2.acceleration, 1)) + " m/s²", False, (255,255,255)), (10,150))
+        screen.blit(font.render("Massa: " + str(round(V2.mass/1000, 1)) + " ton", False, (255,255,255)), (10,200))
+        screen.blit(font.render("Stuwkracht: " + str(round(V2.thrust/1000, 1)) + " kN", False, (255,255,255)), (10,250))
 
         # Met de volgende knoppen kan de tijd slomer en sneller gezet worden. Ook kan de tijd stil gezet worden, evenals de simulatie gereset.
         # DEEL 1 zorgt voor knoppen die niet ingedrukt gehouden kunnen worden.
